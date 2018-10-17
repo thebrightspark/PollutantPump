@@ -1,0 +1,30 @@
+{
+    "type": "forge:ore_shaped",
+    "pattern": [
+        "SDS",
+        "IRI",
+        "SSS"
+    ],
+    "key": {
+        "I": {
+            "type": "forge:ore_dict",
+            "ore": "ingotIron"
+        },
+        "R": {
+            "type": "forge:ore_dict",
+            "ore": "blockRedstone"
+        },
+        "S": {
+            "type": "forge:ore_dict",
+            "ore": "stone"
+        },
+        "D": {
+            "type": "forge:ore_dict",
+            "ore": "gemDiamond"
+        }
+    },
+    "result": {
+        "item": "pollutantpump:pump",
+        "data": 0
+    }
+}
