@@ -22,13 +22,14 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = PollutantPump.MOD_ID, name = PollutantPump.NAME, version = PollutantPump.VERSION)
+@Mod(modid = PollutantPump.MOD_ID, name = PollutantPump.NAME, version = PollutantPump.VERSION, dependencies = PollutantPump.DEPENDENCIES)
 @Mod.EventBusSubscriber
 public class PollutantPump
 {
     public static final String MOD_ID = "pollutantpump";
     public static final String NAME = "Pollutant Pump";
     public static final String VERSION = "@VERSION@";
+    public static final String DEPENDENCIES = "requires-after:adpother@[1.12.2-1,)";
     public static final CreativeTabs TAB = new CreativeTabs(MOD_ID)
     {
         @Override
