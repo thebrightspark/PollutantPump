@@ -53,6 +53,7 @@ public class TilePump extends TileEntity implements ITickable
 			BlockPos pollutantPos = pollutantBlocks.get(world.rand.nextInt(pollutantBlocks.size()));
 			IBlockState pollutantState = world.getBlockState(pollutantPos);
 			Pollutant<?> pollutant = (Pollutant<?>) pollutantState.getBlock();
+			int pollutantAmount = pollutant.getCarriedPollutionAmount(pollutantState);
 
 			//Find any adjacent filters that have space
 			List<BlockPos> filters = ForgeWorld.Position.getAroundCube(world, pos, (w, p) ->
@@ -66,7 +67,6 @@ public class TilePump extends TileEntity implements ITickable
 					if(tile != null)
 					{
 						int freeSpace = filter.getContent(tile).getFreeSpaceFor(pollutant);
-						int pollutantAmount = pollutant.getCarriedPollutionAmount(pollutantState);
 						return freeSpace >= pollutantAmount;
 					}
 				}
@@ -82,9 +82,8 @@ public class TilePump extends TileEntity implements ITickable
 				BlockPos filterPos = filters.get(world.rand.nextInt(numFilters));
 				Filter filter = (Filter) ForgeWorld.getBlock(world, filterPos);
 				Filter.BlockTile tile = filter.getBlockTile(world, filterPos);
-				int amount = pollutant.getCarriedPollutionAmount(pollutantState);
-				int count = filter.fill(tile, pollutant, amount);
-				pollutantMoved = (count == amount);
+				filter.fill(tile, pollutant, pollutantAmount);
+				pollutantMoved = true;
 			}
 			else
 			{
@@ -92,7 +91,6 @@ public class TilePump extends TileEntity implements ITickable
 				List<BlockPos> emptyPositions = ForgeWorld.Position.getAroundCube(world, pos, World::isAirBlock);
 				if(!emptyPositions.isEmpty())
 				{
-					//Find a pollutant block and suck it up
 					BlockPos emptyPos = emptyPositions.get(world.rand.nextInt(emptyPositions.size()));
 					world.setBlockState(emptyPos, pollutantState);
 					pollutantMoved = true;
