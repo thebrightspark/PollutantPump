@@ -40,17 +40,7 @@ public class TilePump extends TileEntity implements ITickable {
 		if (world.getTotalWorldTime() - lastWork >= PPConfig.pumpWorkRate && energy.getEnergyStored() >= PPConfig.pumpEnergyUse) {
 			lastWork = world.getTotalWorldTime();
 
-			// Get all block positions in range
-			List<BlockPos> positions = new ArrayList<>();
-			for (int x = topPipe.getX() - PPConfig.pumpRange; x <= topPipe.getX() + PPConfig.pumpRange; x++) {
-				for (int y = topPipe.getY() - PPConfig.pumpRange; y <= topPipe.getY() + PPConfig.pumpRange; y++) {
-					for (int z = topPipe.getZ() - PPConfig.pumpRange; z <= topPipe.getZ() + PPConfig.pumpRange; z++) {
-						positions.add(new BlockPos(x, y, z));
-					}
-				}
-			}
-			// Shuffle the positions
-			Collections.shuffle(positions);
+			List<BlockPos> positions = getAllPositionsInRange();
 
 			// Go through each position until we find a pollutant
 			for (BlockPos position : positions) {
@@ -61,44 +51,7 @@ public class TilePump extends TileEntity implements ITickable {
 					Pollutant<?> pollutant = (Pollutant<?>) block;
 					int pollutantAmount = pollutant.getCarriedPollutionAmount(state);
 
-					//Find any adjacent filters that have space
-					List<EnumFacing> horizontals = Lists.newArrayList(EnumFacing.HORIZONTALS);
-					Collections.shuffle(horizontals);
-
-					boolean moved = false;
-					for (EnumFacing side : horizontals) {
-						BlockPos sidePos = pos.offset(side);
-						IBlockState sideState = world.getBlockState(sidePos);
-						Block sideBlock = sideState.getBlock();
-
-						if (sideBlock instanceof Filter) {
-							Filter filter = (Filter) sideBlock;
-							Filter.BlockTile filterTE = filter.getBlockTile(world, sidePos);
-							if (filterTE != null) {
-								int freeSpace = filter.getContent(filterTE).getFreeSpaceFor(pollutant);
-								if (freeSpace >= pollutantAmount) {
-									// Move the pollutant into the filter
-									filter.fill(filterTE, pollutant, pollutantAmount);
-									moved = true;
-									break;
-								}
-							}
-						}
-					}
-
-					if (!moved) {
-						// No filters available - try move the pollutant to empty space adjacent to pump
-						for (EnumFacing side : horizontals) {
-							BlockPos sidePos = pos.offset(side);
-							if (world.isAirBlock(sidePos)) {
-								world.setBlockState(sidePos, state);
-								moved = true;
-								break;
-							}
-						}
-					}
-
-					if (moved) {
+					if (tryPumpPollutant(state, pollutant, pollutantAmount)) {
 						// If successfully moved pollutant, then set its original position to air
 						world.setBlockToAir(position);
 						break;
@@ -109,6 +62,55 @@ public class TilePump extends TileEntity implements ITickable {
 			// Use energy
 			energy.extractEnergy(PPConfig.pumpEnergyUse, false);
 		}
+	}
+
+	private List<BlockPos> getAllPositionsInRange() {
+		List<BlockPos> positions = new ArrayList<>();
+		for (int x = topPipe.getX() - PPConfig.pumpRange; x <= topPipe.getX() + PPConfig.pumpRange; x++) {
+			for (int y = topPipe.getY() - PPConfig.pumpRange; y <= topPipe.getY() + PPConfig.pumpRange; y++) {
+				for (int z = topPipe.getZ() - PPConfig.pumpRange; z <= topPipe.getZ() + PPConfig.pumpRange; z++) {
+					positions.add(new BlockPos(x, y, z));
+				}
+			}
+		}
+		Collections.shuffle(positions);
+		return positions;
+	}
+
+	private boolean tryPumpPollutant(IBlockState pollutantState, Pollutant<?> pollutantBlock, int pollutantAmount) {
+		List<EnumFacing> horizontals = Lists.newArrayList(EnumFacing.HORIZONTALS);
+		Collections.shuffle(horizontals);
+
+		//Find any adjacent filters that have space
+		for (EnumFacing side : horizontals) {
+			BlockPos sidePos = pos.offset(side);
+			IBlockState sideState = world.getBlockState(sidePos);
+			Block sideBlock = sideState.getBlock();
+
+			if (sideBlock instanceof Filter) {
+				Filter filter = (Filter) sideBlock;
+				Filter.BlockTile filterTE = filter.getBlockTile(world, sidePos);
+				if (filterTE != null) {
+					int freeSpace = filter.getContent(filterTE).getFreeSpaceFor(pollutantBlock);
+					if (freeSpace >= pollutantAmount) {
+						// Move the pollutant into the filter
+						filter.fill(filterTE, pollutantBlock, pollutantAmount);
+						return true;
+					}
+				}
+			}
+		}
+
+		// No filters available - try move the pollutant to empty space adjacent to pump
+		for (EnumFacing side : horizontals) {
+			BlockPos sidePos = pos.offset(side);
+			if (world.isAirBlock(sidePos)) {
+				world.setBlockState(sidePos, pollutantState);
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
