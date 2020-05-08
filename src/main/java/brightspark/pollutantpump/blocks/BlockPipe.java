@@ -9,6 +9,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -18,6 +19,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ForgeEventFactory;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BlockPipe extends BlockBase {
 	public static final PropertyEnum<PipeSize> PIPE_SIZE = PropertyEnum.create("size", PipeSize.class);
@@ -114,24 +119,34 @@ public class BlockPipe extends BlockBase {
 	}
 
 	@Override
-	public void onBlockHarvested(World worldIn, BlockPos pos, IBlockState state, EntityPlayer player) {
-		notifyPump(worldIn, pos);
+	public void harvestBlock(World worldIn, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity te, ItemStack stack) {
+		player.addStat(StatList.getBlockStats(this));
+		player.addExhaustion(0.005F);
+
+		Item item = Item.getItemFromBlock(this);
+		int count = 1;
 
 		//Destroy all pipes above
-		int numDestroyed = 0;
 		BlockPos.MutableBlockPos towerPos = new BlockPos.MutableBlockPos(pos);
 		while (worldIn.getBlockState(towerPos.move(EnumFacing.UP)).getBlock() instanceof BlockPipe) {
 			worldIn.destroyBlock(towerPos, false);
-			numDestroyed++;
+			count++;
 		}
-		if (numDestroyed > 0 && !player.isCreative()) {
+
+		if (!player.isCreative()) {
 			//Drop the pipes at the same position as this block
-			ItemStack pipes = new ItemStack(this, numDestroyed);
-			float chance = ForgeEventFactory.fireBlockHarvesting(Lists.newArrayList(pipes), worldIn, pos, state, 0, 1F, false, player);
-			if (chance < 1F)
-				pipes.setCount(Math.round(numDestroyed * chance));
-			spawnAsEntity(worldIn, pos, pipes);
+			List<ItemStack> drops = new ArrayList<>();
+			while (count > 0) {
+				int dropCount = Math.min(count, 64);
+				count -= dropCount;
+				drops.add(new ItemStack(item, dropCount));
+			}
+
+			ForgeEventFactory.fireBlockHarvesting(drops, worldIn, pos, state, 0, 1F, false, player);
+			drops.forEach(drop -> spawnAsEntity(worldIn, pos, drop));
 		}
+
+		notifyPump(worldIn, pos);
 	}
 
 	private void notifyPump(World world, BlockPos pos) {
