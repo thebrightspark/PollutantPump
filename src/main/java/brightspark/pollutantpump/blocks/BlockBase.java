@@ -4,15 +4,13 @@ import brightspark.pollutantpump.PollutantPump;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 
-public class BlockBase extends Block
-{
-    public BlockBase(String name)
-    {
-        super(Material.ROCK);
-        setRegistryName(name);
-        setTranslationKey(name);
-        setCreativeTab(PollutantPump.TAB);
-        setHardness(2F);
-        setResistance(15F);
-    }
+public class BlockBase extends Block {
+	public BlockBase(String name) {
+		super(Material.ROCK);
+		setRegistryName(name);
+		setTranslationKey(name);
+		setCreativeTab(PollutantPump.TAB);
+		setHardness(2F);
+		setResistance(15F);
+	}
 }
