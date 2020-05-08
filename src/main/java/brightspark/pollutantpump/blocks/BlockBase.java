@@ -12,5 +12,7 @@ public class BlockBase extends Block
         setRegistryName(name);
         setTranslationKey(name);
         setCreativeTab(PollutantPump.TAB);
+        setHardness(2F);
+        setResistance(15F);
     }
 }
