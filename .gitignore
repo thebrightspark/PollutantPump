@@ -1,13 +1,14 @@
-#IDEA files
-.idea/
-*.iml
+# idea
+out
 *.ipr
 *.iws
+*.iml
+.idea
 
-/eclipse
-/libs
-/out
-/.gradle
-/build
-/run
-/mods/
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
