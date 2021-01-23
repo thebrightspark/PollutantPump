@@ -28,7 +28,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class PollutantPump {
 	public static final String MOD_ID = "pollutantpump";
 	public static final String NAME = "Pollutant Pump";
-	public static final String VERSION = "1.2.0";
+	public static final String VERSION = "@VERSION@";
 	public static final String DEPENDENCIES = "required-after:adpother@[1.12.2-1,)";
 	public static final CreativeTabs TAB = new CreativeTabs(MOD_ID) {
 		@Override
