@@ -2,6 +2,7 @@ package brightspark.pollutantpump.tiles;
 
 import brightspark.pollutantpump.PPConfig;
 import brightspark.pollutantpump.blocks.BlockPipe;
+import brightspark.pollutantpump.blocks.BlockPump;
 import com.endertech.minecraft.forge.api.IPollutant;
 import com.endertech.minecraft.mods.adpother.blocks.Filter;
 import com.endertech.minecraft.mods.adpother.blocks.Pollutant;
@@ -12,6 +13,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.EnergyStorage;
@@ -25,19 +27,35 @@ public class TilePump extends TileEntity implements ITickable {
 	private final EnergyStorage energy = new EnergyStorage(PPConfig.pumpMaxEnergyStorage, Integer.MAX_VALUE);
 	private boolean checkForPipes = true;
 	private BlockPos topPipe;
+	private Boolean wasPoweredLastTick = null;
 	private long lastWork;
 
 	@Override
 	public void update() {
+		if (world.isRemote)
+			return;
+
 		if (checkForPipes) {
 			topPipe = BlockPipe.findTop(world, pos);
 			checkForPipes = false;
 		}
 
-		if (topPipe == null)
+		if (topPipe == null) {
+			wasPoweredLastTick = null;
+			updateState(false);
 			return;
+		}
 
-		if (world.getTotalWorldTime() - lastWork >= PPConfig.pumpWorkRate && energy.getEnergyStored() >= PPConfig.pumpEnergyUse) {
+		boolean isPowered = energy.getEnergyStored() >= PPConfig.pumpEnergyUse;
+
+		// Update block state if necessary
+		if (wasPoweredLastTick == null || isPowered != wasPoweredLastTick) {
+			wasPoweredLastTick = isPowered;
+			updateState(isPowered);
+		}
+
+		// Do work
+		if (world.getTotalWorldTime() - lastWork >= PPConfig.pumpWorkRate && isPowered) {
 			lastWork = world.getTotalWorldTime();
 
 			List<BlockPos> positions = getAllPositionsInRange();
@@ -62,6 +80,10 @@ public class TilePump extends TileEntity implements ITickable {
 			// Use energy
 			energy.extractEnergy(PPConfig.pumpEnergyUse, false);
 		}
+	}
+
+	private void updateState(boolean isPowered) {
+		world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockPump.POWERED, isPowered));
 	}
 
 	private List<BlockPos> getAllPositionsInRange() {
@@ -118,7 +140,7 @@ public class TilePump extends TileEntity implements ITickable {
 		lastWork = world.getTotalWorldTime();
 	}
 
-	public void clearPipe() {
+	public void updatePipe() {
 		checkForPipes = true;
 		topPipe = null;
 	}
@@ -136,5 +158,10 @@ public class TilePump extends TileEntity implements ITickable {
 		if (capability == CapabilityEnergy.ENERGY)
 			return (T) energy;
 		return super.getCapability(capability, facing);
+	}
+
+	@Override
+	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
+		return oldState.getBlock() != newSate.getBlock();
 	}
 }

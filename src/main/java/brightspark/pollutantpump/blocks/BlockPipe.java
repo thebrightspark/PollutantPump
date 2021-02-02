@@ -1,7 +1,6 @@
 package brightspark.pollutantpump.blocks;
 
 import brightspark.pollutantpump.tiles.TilePump;
-import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockStateContainer;
@@ -89,15 +88,15 @@ public class BlockPipe extends BlockBase {
 	}
 
 	@Override
-	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		//Try to add held pipe to top of the tower
-		ItemStack held = playerIn.getHeldItem(hand);
+		ItemStack held = player.getHeldItem(hand);
 		if (held.getItem() == Item.getItemFromBlock(this)) {
-			BlockPos topPipe = findTop(worldIn, pos);
+			BlockPos topPipe = findTop(world, pos);
 			if (topPipe == null)
 				topPipe = pos;
-			if (worldIn.isAirBlock(topPipe.up()) && worldIn.setBlockState(topPipe.up(), getDefaultState())) {
-				if (!playerIn.isCreative())
+			if (world.isAirBlock(topPipe.up()) && world.setBlockState(topPipe.up(), getDefaultState())) {
+				if (!player.isCreative())
 					held.shrink(1);
 				return true;
 			}
@@ -119,7 +118,7 @@ public class BlockPipe extends BlockBase {
 	}
 
 	@Override
-	public void harvestBlock(World worldIn, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity te, ItemStack stack) {
+	public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity te, ItemStack stack) {
 		player.addStat(StatList.getBlockStats(this));
 		player.addExhaustion(0.005F);
 
@@ -128,8 +127,8 @@ public class BlockPipe extends BlockBase {
 
 		//Destroy all pipes above
 		BlockPos.MutableBlockPos towerPos = new BlockPos.MutableBlockPos(pos);
-		while (worldIn.getBlockState(towerPos.move(EnumFacing.UP)).getBlock() instanceof BlockPipe) {
-			worldIn.destroyBlock(towerPos, false);
+		while (world.getBlockState(towerPos.move(EnumFacing.UP)).getBlock() instanceof BlockPipe) {
+			world.destroyBlock(towerPos, false);
 			count++;
 		}
 
@@ -142,24 +141,25 @@ public class BlockPipe extends BlockBase {
 				drops.add(new ItemStack(item, dropCount));
 			}
 
-			ForgeEventFactory.fireBlockHarvesting(drops, worldIn, pos, state, 0, 1F, false, player);
-			drops.forEach(drop -> spawnAsEntity(worldIn, pos, drop));
+			ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, 0, 1F, false, player);
+			drops.forEach(drop -> spawnAsEntity(world, pos, drop));
 		}
+	}
 
-		notifyPump(worldIn, pos);
+	private BlockPos findBottomOfPipes(World world, BlockPos pos) {
+		BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos(pos).move(EnumFacing.DOWN);
+		while (world.getBlockState(checkPos).getBlock() instanceof BlockPipe)
+			checkPos.move(EnumFacing.DOWN);
+		return checkPos.toImmutable();
 	}
 
 	private void notifyPump(World world, BlockPos pos) {
-		for (int y = pos.getY(); y > 0; y--) {
-			BlockPos checkPos = new BlockPos(pos.getX(), y, pos.getZ());
-			Block block = world.getBlockState(checkPos).getBlock();
-			if (block instanceof BlockPump) {
-				TileEntity te = world.getTileEntity(checkPos);
-				if (te instanceof TilePump)
-					((TilePump) te).clearPipe();
-				return;
-			} else if (!(block instanceof BlockPipe))
-				return;
+		BlockPos bottomPos = findBottomOfPipes(world, pos);
+		Block block = world.getBlockState(bottomPos).getBlock();
+		if (block instanceof BlockPump) {
+			TileEntity te = world.getTileEntity(bottomPos);
+			if (te instanceof TilePump)
+				((TilePump) te).updatePipe();
 		}
 	}
 }

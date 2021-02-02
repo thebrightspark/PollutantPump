@@ -4,12 +4,29 @@
         "model": "pollutantpump:pump"
     },
     "variants": {
-        "inventory": [{}],
+        "inventory": [
+            {}
+        ],
         "facing": {
             "north": {},
-            "east":  { "y": 90 },
-            "south": { "y": 180 },
-            "west":  { "y": 270 }
+            "east": {
+                "y": 90
+            },
+            "south": {
+                "y": 180
+            },
+            "west": {
+                "y": 270
+            }
+        },
+        "powered": {
+            "true": {
+                "textures": {
+                    "north": "pollutantpump:blocks/pump_fan",
+                    "south": "pollutantpump:blocks/pump_fan"
+                }
+            },
+            "false": {}
         }
     }
 }
