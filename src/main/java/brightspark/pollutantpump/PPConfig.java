@@ -6,7 +6,7 @@ import net.minecraftforge.common.config.Config;
 public class PPConfig {
 	@Config.Comment("The max amount of energy the pump will hold")
 	@Config.RangeInt(min = 0)
-	public static int pumpMaxEnergyStorage = 10000;
+	public static int pumpMaxEnergyStorage = 1000;
 
 	@Config.Comment("The amount of energy the pump will use per tick")
 	@Config.RangeInt(min = 0)
