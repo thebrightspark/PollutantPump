@@ -2,6 +2,7 @@ package brightspark.pollutantpump.blocks;
 
 import brightspark.pollutantpump.tiles.TilePump;
 import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -13,6 +14,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -96,6 +98,8 @@ public class BlockPipe extends BlockBase {
 			if (topPipe == null)
 				topPipe = pos;
 			if (world.isAirBlock(topPipe.up()) && world.setBlockState(topPipe.up(), getDefaultState())) {
+				SoundType soundType = getSoundType(state, world, pos, player);
+				world.playSound(player, pos, soundType.getPlaceSound(), SoundCategory.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
 				if (!player.isCreative())
 					held.shrink(1);
 				return true;
