@@ -150,6 +150,24 @@ public class BlockPipe extends BlockBase {
 		}
 	}
 
+	@Override
+	public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
+		if (player.isCreative()) {
+			//Destroy all pipes above without drops in creative
+			BlockPos.MutableBlockPos towerPos = new BlockPos.MutableBlockPos(pos);
+			while (world.getBlockState(towerPos.move(EnumFacing.UP)).getBlock() instanceof BlockPipe) {
+				world.destroyBlock(towerPos, false);
+			}
+		}
+
+		boolean result = super.removedByPlayer(state, world, pos, player, willHarvest);
+
+		// Notify pump that pipes have been destroyed
+		notifyPump(world, pos);
+
+		return result;
+	}
+
 	private BlockPos findBottomOfPipes(World world, BlockPos pos) {
 		BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos(pos).move(EnumFacing.DOWN);
 		while (world.getBlockState(checkPos).getBlock() instanceof BlockPipe)
