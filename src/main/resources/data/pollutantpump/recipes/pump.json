@@ -7,16 +7,16 @@
     ],
     "key": {
         "I": {
-            "item": "minecraft:iron_ingot"
+            "tag": "forge:ingots/iron"
         },
         "R": {
-            "item": "minecraft:redstone"
+            "tag": "forge:dusts/redstone"
         },
         "S": {
-            "item": "minecraft:stone"
+            "tag": "forge:stone"
         },
         "D": {
-            "item": "minecraft:diamond"
+            "tag": "forge:gems/diamond"
         }
     },
     "result": {
