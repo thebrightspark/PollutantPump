@@ -1,32 +1,27 @@
 {
-    "forge_marker": 1,
-    "defaults": {
-        "model": "pollutantpump:block/pump"
-    },
     "variants": {
-        "inventory": [
-            {}
-        ],
-        "facing": {
-            "north": {},
-            "east": {
-                "y": 90
-            },
-            "south": {
-                "y": 180
-            },
-            "west": {
-                "y": 270
-            }
+        "facing=north": {
+            "model": "pollutantpump:block/pump"
         },
-        "powered": {
-            "true": {
-                "textures": {
-                    "north": "pollutantpump:blocks/pump_fan",
-                    "south": "pollutantpump:blocks/pump_fan"
-                }
-            },
-            "false": {}
+        "facing=south": {
+            "model": "pollutantpump:block/pump",
+            "y": 180
+        },
+        "facing=east": {
+            "model": "pollutantpump:block/pump",
+            "y": 90
+        },
+        "facing=west": {
+            "model": "pollutantpump:block/pump",
+            "y": -90
+        },
+        "powered=true": {
+            "model": "pollutantpump:block/pump_powered",
+            "y": -90
+        },
+        "powered=false": {
+            "model": "pollutantpump:block/pump",
+            "y": -90
         }
     }
 }

@@ -4,8 +4,8 @@
         "particle": "pollutantpump:block/block_side",
         "down": "pollutantpump:block/block_side",
         "up": "pollutantpump:block/pump_top",
-        "north": "pollutantpump:block/pump_fan_still",
-        "south": "pollutantpump:block/pump_fan_still",
+        "north": "pollutantpump:block/pump_fan",
+        "south": "pollutantpump:block/pump_fan",
         "west": "pollutantpump:block/block_side",
         "east": "pollutantpump:block/block_side"
     }
