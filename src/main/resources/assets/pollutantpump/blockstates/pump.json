@@ -1,26 +1,33 @@
 {
     "variants": {
-        "facing=north": {
+        "facing=north,powered=false": {
             "model": "pollutantpump:block/pump"
         },
-        "facing=south": {
+        "facing=south,powered=false": {
             "model": "pollutantpump:block/pump",
             "y": 180
         },
-        "facing=east": {
+        "facing=east,powered=false": {
             "model": "pollutantpump:block/pump",
             "y": 90
         },
-        "facing=west": {
+        "facing=west,powered=false": {
             "model": "pollutantpump:block/pump",
             "y": -90
         },
-        "powered=true": {
+        "facing=north,powered=true": {
+            "model": "pollutantpump:block/pump_powered"
+        },
+        "facing=south,powered=true": {
             "model": "pollutantpump:block/pump_powered",
-            "y": -90
+            "y": 180
         },
-        "powered=false": {
-            "model": "pollutantpump:block/pump",
+        "facing=east,powered=true": {
+            "model": "pollutantpump:block/pump_powered",
+            "y": 90
+        },
+        "facing=west,powered=true": {
+            "model": "pollutantpump:block/pump_powered",
             "y": -90
         }
     }
