@@ -11,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.EnumProperty;
 import net.minecraft.state.Property;
 import net.minecraft.state.StateContainer;
+import net.minecraft.stats.Stats;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
@@ -121,6 +122,7 @@ public class BlockPipe extends BlockBase {
 
 	@Override
 	public void harvestBlock(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable TileEntity te, ItemStack stack) {
+		player.addStat(Stats.BLOCK_MINED.get(this));
 		player.addExhaustion(0.005F);
 
 		Item item = Item.getItemFromBlock(this);
