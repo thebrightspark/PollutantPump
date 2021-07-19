@@ -3,7 +3,6 @@ package brightspark.pollutantpump.blocks;
 import brightspark.pollutantpump.tiles.TilePump;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.DirectionProperty;
@@ -11,12 +10,9 @@ import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
@@ -45,22 +41,6 @@ public class BlockPump extends BlockBase {
 		return new TilePump();
 	}
 
-//	@Override
-//	public int getMetaFromState(IBlockState state) {
-//		return state.getValue(FACING).getHorizontalIndex() | (state.getValue(POWERED) ? 4 : 0);
-//	}
-//
-//	@Override
-//	public IBlockState getStateFromMeta(int meta) {
-//		return getDefaultState()
-//			.withProperty(FACING, EnumFacing.byHorizontalIndex(meta & 3))
-//			.withProperty(POWERED, (meta & 4) > 0);
-//	}
-//
-//	@Override
-//	protected BlockStateContainer createBlockState() {
-//		return new BlockStateContainer(this, FACING, POWERED);
-//	}
 
 	@Override
 	public BlockState rotate(BlockState state, Rotation rot) {

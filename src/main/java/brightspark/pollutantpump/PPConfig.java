@@ -1,53 +1,52 @@
 package brightspark.pollutantpump;
 
+import java.nio.file.Path;
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.core.io.WritingMode;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class PPConfig {
-	private final ForgeConfigSpec configSpec;
+	public static final ForgeConfigSpec CONFIG_SPEC;
 	//@Config.Comment("The max amount of energy the pump will hold")
 	//@Config.RangeInt(min = 0)
-	public static int pumpMaxEnergyStorage = 1000;
+	public static ForgeConfigSpec.IntValue pumpMaxEnergyStorage;
 
 	//@Config.Comment("The amount of energy the pump will use per tick")
 	//@Config.RangeInt(min = 0)
-	public static int pumpEnergyUse = 50;
+	public static ForgeConfigSpec.IntValue pumpEnergyUse;
 
 	//@Config.Comment("The time in ticks between each pollutant block the pump tries to suck up")
 	//@Config.RangeInt(min = 1)
-	public static int pumpWorkRate = 60;
+	public static ForgeConfigSpec.IntValue pumpWorkRate;
 
 	//@Config.Comment("The range from the top pipe that pollution will be sucked from")
 	//@Config.RangeInt(min = 1)
-	public static int pumpRange = 5;
+	public static ForgeConfigSpec.IntValue pumpRange;
 
-	public PPConfig() {
+	static {
 
 		ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-		builder.comment("The max amount of energy the pump will hold")
+		builder.comment("Config for pump").push("pollutantpump");
+
+		pumpMaxEnergyStorage = builder.comment("The max amount of energy the pump will hold")
 				.defineInRange("pumpMaxEnergyStorage", 1000, 0, Integer.MAX_VALUE);
-		builder.comment("The amount of energy the pump will use per tick")
+		pumpEnergyUse = builder.comment("The amount of energy the pump will use per tick")
 				.defineInRange("pumpEnergyUse", 50, 0, Integer.MAX_VALUE);
-		builder.comment("The time in ticks between each pollutant block the pump tries to suck up")
+		pumpWorkRate = builder.comment("The time in ticks between each pollutant block the pump tries to suck up")
 				.defineInRange("pumpWorkRate", 60, 1, Integer.MAX_VALUE);
-		builder.comment("The range from the top pipe that pollution will be sucked from")
+		pumpRange = builder.comment("The range from the top pipe that pollution will be sucked from")
 				.defineInRange("pumpRange", 5, 1, Integer.MAX_VALUE);
+		builder.pop();
 
-		this.configSpec = builder.build();
+		CONFIG_SPEC = builder.build();
 	}
 
-	public int getPumpWorkRate() {
-		return this.configSpec.get("pumpWorkRate");
-	}
+	public static void loadConfig(ForgeConfigSpec spec, Path path)
+	{
+		final CommentedFileConfig configData = CommentedFileConfig.builder(path).sync().autosave().writingMode(WritingMode.REPLACE).build();
 
-	public int getPumpMaxEnergyStorage() {
-		return this.configSpec.get("pumpMaxEnergyStorage");
-	}
+		configData.load();
 
-	public int getPumpEnergyUse() {
-		return this.configSpec.get("pumpEnergyUse");
-	}
-
-	public int getPumpRange() {
-		return this.configSpec.get("pumpRange");
+		spec.setConfig(configData);
 	}
 }

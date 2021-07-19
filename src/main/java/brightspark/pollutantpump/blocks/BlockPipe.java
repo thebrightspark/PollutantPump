@@ -13,12 +13,12 @@ import net.minecraft.state.Property;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import net.minecraftforge.event.ForgeEventFactory;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -26,8 +26,8 @@ import java.util.List;
 
 public class BlockPipe extends BlockBase {
 	public static final Property<PipeSize> PIPE_SIZE = EnumProperty.create("size", PipeSize.class);
-	private static final AxisAlignedBB BOX_FULL = new AxisAlignedBB(0.25D, 0.0D, 0.25D, 0.75D, 1.0D, 0.75D);
-	private static final AxisAlignedBB BOX_HALF = new AxisAlignedBB(0.25D, 0.0D, 0.25D, 0.75D, 0.5D, 0.75D);
+	private static final VoxelShape BOX_FULL = Block.makeCuboidShape(4, 0, 4, 12, 16, 12);
+	private static final VoxelShape BOX_HALF = Block.makeCuboidShape(4, 0, 4, 12, 8, 12);
 
 	public enum PipeSize implements IStringSerializable {
 		FULL("full"),
@@ -55,38 +55,27 @@ public class BlockPipe extends BlockBase {
 		builder.add(PIPE_SIZE);
 	}
 
-	//	@Override
-//	public AxisAlignedBB getBoundingBox(BlockState state, IBlockReader source, BlockPos pos) {
-//		return getActualState(state, source, pos).getValue(PIPE_SIZE) == PipeSize.FULL ? BOX_FULL : BOX_HALF;
-//	}
+	@Override
+	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+		switch((PipeSize)state.get(PIPE_SIZE)) {
+			case HALF:
+				return BOX_HALF;
+			case FULL:
+			default:
+				return BOX_FULL;
+		}
+	}
 
-//	@Override
-//	public boolean isFullCube(BlockState state) {
-//		return false;
-//	}
-//
-//	@Override
-//	public boolean isOpaqueCube(BlockState state) {
-//		return false;
-//	}
-
-//	@Override
-//	public IBlockState getActualState(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
-//		Block down = worldIn.getBlockState(pos.down()).getBlock();
-//		Block up = worldIn.getBlockState(pos.up()).getBlock();
-//		boolean isHalf = (down instanceof BlockPipe || down instanceof BlockPump) && !(up instanceof BlockPipe);
-//		return state.withProperty(PIPE_SIZE, isHalf ? PipeSize.HALF : PipeSize.FULL);
-//	}
-
-//	@Override
-//	public int getMetaFromState(IBlockState state) {
-//		return 0;
-//	}
-//
-//	@Override
-//	protected BlockStateContainer createBlockState() {
-//		return new BlockStateContainer(this, PIPE_SIZE);
-//	}
+	@Override
+	public VoxelShape getRaytraceShape(BlockState state, IBlockReader worldIn, BlockPos pos) {
+		switch((PipeSize)state.get(PIPE_SIZE)) {
+			case HALF:
+				return BOX_HALF;
+			case FULL:
+			default:
+				return BOX_FULL;
+		}
+	}
 
 
 	@Override
@@ -132,7 +121,6 @@ public class BlockPipe extends BlockBase {
 
 	@Override
 	public void harvestBlock(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable TileEntity te, ItemStack stack) {
-		//player.addStat(Stat..getBlockStats(this));
 		player.addExhaustion(0.005F);
 
 		Item item = Item.getItemFromBlock(this);

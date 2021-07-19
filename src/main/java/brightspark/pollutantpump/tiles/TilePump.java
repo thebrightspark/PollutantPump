@@ -16,9 +16,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
@@ -27,8 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class TilePump extends TileEntity implements ITickableTileEntity {
-	@CapabilityInject(IEnergyStorage.class)
-	LazyOptional<IEnergyStorage> energy;
+	LazyOptional<IEnergyStorage> energy = LazyOptional.of(() -> new EnergyStorage(PPConfig.pumpMaxEnergyStorage.get()));
 
 	private boolean checkForPipes = true;
 	private BlockPos topPipe;
@@ -55,9 +54,7 @@ public class TilePump extends TileEntity implements ITickableTileEntity {
 			return;
 		}
 
-		boolean isPowered = true;
-		if (energy != null && energy.resolve() != null && energy.resolve().get() != null)
-			isPowered = energy.resolve().get().getEnergyStored() >= PPConfig.pumpEnergyUse;
+		boolean isPowered = energy.resolve().get().getEnergyStored() >= PPConfig.pumpEnergyUse.get();
 
 		// Update block state if necessary
 		if (wasPoweredLastTick == null || isPowered != wasPoweredLastTick) {
@@ -66,7 +63,7 @@ public class TilePump extends TileEntity implements ITickableTileEntity {
 		}
 
 		// Do work
-		if (world.getGameTime() - lastWork >= PPConfig.pumpWorkRate && isPowered) {
+		if (world.getGameTime() - lastWork >= PPConfig.pumpWorkRate.get() && isPowered) {
 			lastWork = world.getGameTime();
 
 			List<BlockPos> positions = getAllPositionsInRange();
@@ -89,8 +86,7 @@ public class TilePump extends TileEntity implements ITickableTileEntity {
 			}
 
 			// Use energy
-			if (energy != null && energy.resolve() != null && energy.resolve().get() != null)
-				energy.resolve().get().extractEnergy(PPConfig.pumpEnergyUse, false);
+			energy.resolve().get().extractEnergy(PPConfig.pumpEnergyUse.get(), false);
 		}
 	}
 
@@ -100,9 +96,9 @@ public class TilePump extends TileEntity implements ITickableTileEntity {
 
 	private List<BlockPos> getAllPositionsInRange() {
 		List<BlockPos> positions = new ArrayList<>();
-		for (int x = topPipe.getX() - PPConfig.pumpRange; x <= topPipe.getX() + PPConfig.pumpRange; x++) {
-			for (int y = topPipe.getY() - PPConfig.pumpRange; y <= topPipe.getY() + PPConfig.pumpRange; y++) {
-				for (int z = topPipe.getZ() - PPConfig.pumpRange; z <= topPipe.getZ() + PPConfig.pumpRange; z++) {
+		for (int x = topPipe.getX() - PPConfig.pumpRange.get(); x <= topPipe.getX() + PPConfig.pumpRange.get(); x++) {
+			for (int y = topPipe.getY() - PPConfig.pumpRange.get(); y <= topPipe.getY() + PPConfig.pumpRange.get(); y++) {
+				for (int z = topPipe.getZ() - PPConfig.pumpRange.get(); z <= topPipe.getZ() + PPConfig.pumpRange.get(); z++) {
 					positions.add(new BlockPos(x, y, z));
 				}
 			}
@@ -157,26 +153,20 @@ public class TilePump extends TileEntity implements ITickableTileEntity {
 		topPipe = null;
 	}
 
-//	@SuppressWarnings("NullableProblems")
-//	@Override
-//	public boolean hasCapability(Capability<?> capability, @Nullable Direction facing) {
-//		return capability == CapabilityEnergy.ENERGY || super.hasCapability(capability, facing);
-//	}
 
-	@SuppressWarnings("all")
 	@Nullable
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> capability, Direction facing) {
 		if (capability == CapabilityEnergy.ENERGY)
-			if (energy != null && energy.resolve() != null && energy.resolve().get() != null)
-				return energy.cast();
+			return energy.cast();
+
 		return super.getCapability(capability, facing);
 	}
 
 	@Override
 	public void invalidateCaps() {
 		super.invalidateCaps();
-		if (energy != null && energy.resolve() != null && energy.resolve().get() != null)
-			energy.invalidate();
+		energy.invalidate();
+
 	}
 }
