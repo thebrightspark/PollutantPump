@@ -1,72 +1,80 @@
 package brightspark.pollutantpump.blocks;
 
 import brightspark.pollutantpump.tiles.TilePump;
-import net.minecraft.block.BlockHorizontal;
-import net.minecraft.block.BlockLever;
-import net.minecraft.block.properties.PropertyBool;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.DirectionProperty;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
 public class BlockPump extends BlockBase {
-	public static final PropertyDirection FACING = BlockHorizontal.FACING;
-	public static final PropertyBool POWERED = BlockLever.POWERED;
+	public static final DirectionProperty FACING = BlockStateProperties.FACING;
+	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
 	public BlockPump() {
-		super("pump");
-		setDefaultState(blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(POWERED, false));
+		super();
+		setDefaultState(this.getDefaultState().with(FACING, Direction.NORTH).with(POWERED, false));
 	}
 
 	@Override
-	public boolean hasTileEntity(IBlockState state) {
+	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+		builder.add(FACING, POWERED);
+	}
+
+	@Override
+	public boolean hasTileEntity(BlockState state) {
 		return true;
 	}
 
 	@Nullable
 	@Override
-	public TileEntity createTileEntity(World world, IBlockState state) {
+	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
 		return new TilePump();
 	}
 
+//	@Override
+//	public int getMetaFromState(IBlockState state) {
+//		return state.getValue(FACING).getHorizontalIndex() | (state.getValue(POWERED) ? 4 : 0);
+//	}
+//
+//	@Override
+//	public IBlockState getStateFromMeta(int meta) {
+//		return getDefaultState()
+//			.withProperty(FACING, EnumFacing.byHorizontalIndex(meta & 3))
+//			.withProperty(POWERED, (meta & 4) > 0);
+//	}
+//
+//	@Override
+//	protected BlockStateContainer createBlockState() {
+//		return new BlockStateContainer(this, FACING, POWERED);
+//	}
+
 	@Override
-	public int getMetaFromState(IBlockState state) {
-		return state.getValue(FACING).getHorizontalIndex() | (state.getValue(POWERED) ? 4 : 0);
+	public BlockState rotate(BlockState state, Rotation rot) {
+		return state.with(FACING, rot.rotate(state.get(FACING)));
 	}
 
 	@Override
-	public IBlockState getStateFromMeta(int meta) {
-		return getDefaultState()
-			.withProperty(FACING, EnumFacing.byHorizontalIndex(meta & 3))
-			.withProperty(POWERED, (meta & 4) > 0);
+	public BlockState mirror(BlockState state, Mirror mirrorIn) {
+		return state.rotate(mirrorIn.toRotation(state.get(FACING)));
 	}
 
+	@Nullable
 	@Override
-	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, FACING, POWERED);
-	}
-
-	@Override
-	public IBlockState withRotation(IBlockState state, Rotation rot) {
-		return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
-	}
-
-	@Override
-	public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
-		return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
-	}
-
-	@Override
-	public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
-		return getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+	public BlockState getStateForPlacement(BlockItemUseContext context) {
+		return getDefaultState().with(FACING, context.getPlayer().getHorizontalFacing().getOpposite());
 	}
 }

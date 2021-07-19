@@ -1,37 +1,46 @@
 package brightspark.pollutantpump.tiles;
 
 import brightspark.pollutantpump.PPConfig;
+import brightspark.pollutantpump.registration.PPTileEntityTypes;
 import brightspark.pollutantpump.blocks.BlockPipe;
 import brightspark.pollutantpump.blocks.BlockPump;
-import com.endertech.minecraft.forge.api.IPollutant;
-import com.endertech.minecraft.mods.adpother.blocks.Filter;
+import com.endertech.minecraft.forge.blocks.IPollutant;
+import com.endertech.minecraft.mods.adpother.blocks.FilterFrame;
 import com.endertech.minecraft.mods.adpother.blocks.Pollutant;
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.CapabilityEnergy;
-import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TilePump extends TileEntity implements ITickable {
-	private final EnergyStorage energy = new EnergyStorage(PPConfig.pumpMaxEnergyStorage, Integer.MAX_VALUE);
+public class TilePump extends TileEntity implements ITickableTileEntity {
+	@CapabilityInject(IEnergyStorage.class)
+	LazyOptional<IEnergyStorage> energy;
+
 	private boolean checkForPipes = true;
 	private BlockPos topPipe;
 	private Boolean wasPoweredLastTick = null;
 	private long lastWork;
 
+	public TilePump() {
+		super(PPTileEntityTypes.POLLUTION_PUMP_TILE.get());
+	}
+
 	@Override
-	public void update() {
+	public void tick() {
 		if (world.isRemote)
 			return;
 
@@ -46,7 +55,9 @@ public class TilePump extends TileEntity implements ITickable {
 			return;
 		}
 
-		boolean isPowered = energy.getEnergyStored() >= PPConfig.pumpEnergyUse;
+		boolean isPowered = true;
+		if (energy != null && energy.resolve() != null && energy.resolve().get() != null)
+			isPowered = energy.resolve().get().getEnergyStored() >= PPConfig.pumpEnergyUse;
 
 		// Update block state if necessary
 		if (wasPoweredLastTick == null || isPowered != wasPoweredLastTick) {
@@ -55,14 +66,14 @@ public class TilePump extends TileEntity implements ITickable {
 		}
 
 		// Do work
-		if (world.getTotalWorldTime() - lastWork >= PPConfig.pumpWorkRate && isPowered) {
-			lastWork = world.getTotalWorldTime();
+		if (world.getGameTime() - lastWork >= PPConfig.pumpWorkRate && isPowered) {
+			lastWork = world.getGameTime();
 
 			List<BlockPos> positions = getAllPositionsInRange();
 
 			// Go through each position until we find a pollutant
 			for (BlockPos position : positions) {
-				IBlockState state = world.getBlockState(position);
+				BlockState state = world.getBlockState(position);
 				Block block = state.getBlock();
 
 				if (block instanceof Pollutant && ((IPollutant) block).getPollutantType() == IPollutant.Type.AIR) {
@@ -71,19 +82,20 @@ public class TilePump extends TileEntity implements ITickable {
 
 					if (tryPumpPollutant(state, pollutant, pollutantAmount)) {
 						// If successfully moved pollutant, then set its original position to air
-						world.setBlockToAir(position);
+						world.setBlockState(position, Blocks.AIR.getDefaultState());
 						break;
 					}
 				}
 			}
 
 			// Use energy
-			energy.extractEnergy(PPConfig.pumpEnergyUse, false);
+			if (energy != null && energy.resolve() != null && energy.resolve().get() != null)
+				energy.resolve().get().extractEnergy(PPConfig.pumpEnergyUse, false);
 		}
 	}
 
 	private void updateState(boolean isPowered) {
-		world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockPump.POWERED, isPowered));
+		world.setBlockState(pos, world.getBlockState(pos).with(BlockPump.POWERED, isPowered));
 	}
 
 	private List<BlockPos> getAllPositionsInRange() {
@@ -99,19 +111,19 @@ public class TilePump extends TileEntity implements ITickable {
 		return positions;
 	}
 
-	private boolean tryPumpPollutant(IBlockState pollutantState, Pollutant<?> pollutantBlock, int pollutantAmount) {
-		List<EnumFacing> horizontals = Lists.newArrayList(EnumFacing.HORIZONTALS);
+	private boolean tryPumpPollutant(BlockState pollutantState, Pollutant<?> pollutantBlock, int pollutantAmount) {
+		List<Direction> horizontals = Lists.newArrayList(Direction.Plane.HORIZONTAL);
 		Collections.shuffle(horizontals);
 
 		//Find any adjacent filters that have space
-		for (EnumFacing side : horizontals) {
+		for (Direction side : horizontals) {
 			BlockPos sidePos = pos.offset(side);
-			IBlockState sideState = world.getBlockState(sidePos);
+			BlockState sideState = world.getBlockState(sidePos);
 			Block sideBlock = sideState.getBlock();
 
-			if (sideBlock instanceof Filter) {
-				Filter filter = (Filter) sideBlock;
-				Filter.BlockTile filterTE = filter.getBlockTile(world, sidePos);
+			if (sideBlock instanceof FilterFrame) {
+				FilterFrame filter = (FilterFrame) sideBlock;
+				FilterFrame.BlockTile filterTE = filter.getTile(world, sidePos).orElse(null);
 				if (filterTE != null) {
 					int freeSpace = filter.getContent(filterTE).getFreeSpaceFor(pollutantBlock);
 					if (freeSpace >= pollutantAmount) {
@@ -124,7 +136,7 @@ public class TilePump extends TileEntity implements ITickable {
 		}
 
 		// No filters available - try move the pollutant to empty space adjacent to pump
-		for (EnumFacing side : horizontals) {
+		for (Direction side : horizontals) {
 			BlockPos sidePos = pos.offset(side);
 			if (world.isAirBlock(sidePos)) {
 				world.setBlockState(sidePos, pollutantState);
@@ -137,7 +149,7 @@ public class TilePump extends TileEntity implements ITickable {
 
 	@Override
 	public void onLoad() {
-		lastWork = world.getTotalWorldTime();
+		lastWork = world.getGameTime();
 	}
 
 	public void updatePipe() {
@@ -145,23 +157,26 @@ public class TilePump extends TileEntity implements ITickable {
 		topPipe = null;
 	}
 
-	@SuppressWarnings("NullableProblems")
-	@Override
-	public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-		return capability == CapabilityEnergy.ENERGY || super.hasCapability(capability, facing);
-	}
+//	@SuppressWarnings("NullableProblems")
+//	@Override
+//	public boolean hasCapability(Capability<?> capability, @Nullable Direction facing) {
+//		return capability == CapabilityEnergy.ENERGY || super.hasCapability(capability, facing);
+//	}
 
 	@SuppressWarnings("all")
 	@Nullable
 	@Override
-	public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+	public <T> LazyOptional<T> getCapability(Capability<T> capability, Direction facing) {
 		if (capability == CapabilityEnergy.ENERGY)
-			return (T) energy;
+			if (energy != null && energy.resolve() != null && energy.resolve().get() != null)
+				return energy.cast();
 		return super.getCapability(capability, facing);
 	}
 
 	@Override
-	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
-		return oldState.getBlock() != newSate.getBlock();
+	public void invalidateCaps() {
+		super.invalidateCaps();
+		if (energy != null && energy.resolve() != null && energy.resolve().get() != null)
+			energy.invalidate();
 	}
 }

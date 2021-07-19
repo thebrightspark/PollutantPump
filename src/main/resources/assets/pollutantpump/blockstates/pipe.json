@@ -1,7 +1,7 @@
 {
     "forge_marker": 1,
     "defaults": {
-        "model": "pollutantpump:pipe",
+        "model": "pollutantpump:block/pipe",
         "textures": {
             "wall": "pollutantpump:blocks/block_side",
             "top": "pollutantpump:blocks/pump_top",
@@ -13,7 +13,7 @@
         "size": {
             "full": {},
             "half": {
-                "model": "pollutantpump:pipe_half",
+                "model": "pollutantpump:block/pipe_half",
                 "textures": {
                     "top": "pollutantpump:blocks/pipe_grate"
                 }
