@@ -69,22 +69,11 @@ public class BlockPipe extends BlockBase {
 
 	@Override
 	public VoxelShape getRaytraceShape(BlockState state, IBlockReader worldIn, BlockPos pos) {
-		switch((PipeSize)state.get(PIPE_SIZE)) {
-			case HALF:
-				return BOX_HALF;
-			case FULL:
-			default:
-				return BOX_FULL;
-		}
+		return getShape(state, worldIn, pos, null);
 	}
-
 
 	@Override
 	public void onBlockAdded(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
-		this.notifyOnBlockAdded(worldIn, pos);
-	}
-
-	public void notifyOnBlockAdded(World worldIn, BlockPos pos) {
 		notifyPump(worldIn, pos);
 	}
 
@@ -144,7 +133,6 @@ public class BlockPipe extends BlockBase {
 				drops.add(new ItemStack(item, dropCount));
 			}
 
-			//ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, 0, 1F, false, player);
 			drops.forEach(drop -> spawnAsEntity(world, pos, drop));
 		}
 	}
