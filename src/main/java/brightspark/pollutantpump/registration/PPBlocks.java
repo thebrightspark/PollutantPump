@@ -28,7 +28,7 @@ public class PPBlocks {
 
 	private static <T extends Block> RegistryObject<T> register(String name, Supplier<T> block) {
 		RegistryObject<T> ret = registerBlock(name, block);
-		RegistrationManager.ITEMS.register(name, () -> new BlockItem(ret.get(), new Item.Properties().group(ItemGroup.MISC)));
+		RegistrationManager.ITEMS.register(name, () -> new BlockItem(ret.get(), new Item.Properties().group(PPTab.INSTANCE)));
 		return  ret;
 	}
 }
