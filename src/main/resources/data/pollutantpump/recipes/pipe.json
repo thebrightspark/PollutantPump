@@ -1,5 +1,5 @@
 {
-    "type": "forge:ore_shaped",
+    "type": "minecraft:crafting_shaped",
     "pattern": [
         " I ",
         "I I",
@@ -7,13 +7,11 @@
     ],
     "key": {
         "I": {
-            "type": "forge:ore_dict",
-            "ore": "ingotIron"
+            "tag": "forge:ingots/iron"
         }
     },
     "result": {
         "item": "pollutantpump:pipe",
-        "data": 0,
         "count": 8
     }
 }
