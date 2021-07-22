@@ -19,6 +19,8 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -48,7 +50,7 @@ public class BlockPipe extends BlockBase {
 
 	public BlockPipe() {
 		super();
-		setDefaultState(this.getDefaultState().with(PIPE_SIZE, PipeSize.FULL));
+		setDefaultState(this.getDefaultState().with(PIPE_SIZE, PipeSize.HALF));
 	}
 
 	@Override
@@ -57,8 +59,10 @@ public class BlockPipe extends BlockBase {
 	}
 
 	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-		switch((PipeSize)state.get(PIPE_SIZE)) {
+	public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
+		PipeSize size = getActualState(state, world, pos).get(PIPE_SIZE);
+
+		switch(size) {
 			case HALF:
 				return BOX_HALF;
 			case FULL:
@@ -72,9 +76,24 @@ public class BlockPipe extends BlockBase {
 		return getShape(state, worldIn, pos, null);
 	}
 
+	private BlockState getActualState(BlockState state, IBlockReader world, BlockPos pos) {
+		Block down = world.getBlockState(pos.down()).getBlock();
+		Block up = world.getBlockState(pos.up()).getBlock();
+		boolean isHalf = (down instanceof BlockPipe || down instanceof BlockPump) && !(up instanceof BlockPipe);
+		return state.with(PIPE_SIZE, isHalf ? PipeSize.HALF: PipeSize.FULL);
+	}
+
 	@Override
-	public void onBlockAdded(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
-		notifyPump(worldIn, pos);
+	public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean isMoving) {
+		PipeSize size = getActualState(state, world, pos).get(PIPE_SIZE);
+		if (state.get(PIPE_SIZE) != size) {
+			world.setBlockState(pos, state.with(PIPE_SIZE, size));
+		}
+		BlockState down = world.getBlockState(pos.down());
+		if (down.getBlock() instanceof BlockPipe) {
+			world.setBlockState(pos.down(), state.with(PIPE_SIZE, PipeSize.FULL));
+		}
+		notifyPump(world, pos);
 	}
 
 	@Override
@@ -151,6 +170,12 @@ public class BlockPipe extends BlockBase {
 
 		// Notify pump that pipes have been destroyed
 		notifyPump(world, pos);
+
+		// update pipe below
+		BlockState down = world.getBlockState(pos.down());
+		if (down.getBlock() instanceof BlockPipe) {
+			world.setBlockState(pos.down(), down.with(PIPE_SIZE, PipeSize.HALF));
+		}
 
 		return result;
 	}
