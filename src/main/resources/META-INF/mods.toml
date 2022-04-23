@@ -1,0 +1,29 @@
+modLoader="kotlinforforge"
+loaderVersion="[1,)"
+license="GNU General Public License v3.0"
+issueTrackerURL="https://github.com/thebrightspark/PollutantPump/issues"
+
+[[mods]]
+    modId="pollutantpump"
+    version="${file.jarVersion}"
+    displayName="Pollutant Pump"
+    displayURL="https://www.curseforge.com/minecraft/mc-mods/pollutant-pump"
+    #logoFile="banner.png"
+    authors="bright_spark"
+    description='''
+    Manage custom sized areas of the world and allocate them to players!
+    '''
+
+[[dependencies.pollutantpump]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.pollutantpump]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5]"
+    ordering="NONE"
+    side="BOTH"

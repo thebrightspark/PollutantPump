@@ -2,8 +2,11 @@
     "credit": "Made with Blockbench",
     "parent": "block/block",
     "textures": {
-        "particle": "#wall"
-    },
+		"particle": "pollutantpump:block/block_side",
+		"wall": "pollutantpump:block/block_side",
+		"top": "pollutantpump:block/pump_top",
+		"bottom": "pollutantpump:block/pump_top"
+	},
     "elements": [
         {
             "from": [6, 0, 4],

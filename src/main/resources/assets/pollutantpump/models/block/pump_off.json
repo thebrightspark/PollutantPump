@@ -1,0 +1,12 @@
+{
+	"parent": "block/cube",
+	"textures": {
+		"particle": "pollutantpump:block/block_side",
+		"down": "pollutantpump:block/block_side",
+		"up": "pollutantpump:block/pump_top",
+		"north": "pollutantpump:block/pump_fan_still",
+		"south": "pollutantpump:block/pump_fan_still",
+		"west": "pollutantpump:block/block_side",
+		"east": "pollutantpump:block/block_side"
+	}
+}
