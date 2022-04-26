@@ -77,20 +77,19 @@ class PipeBlock(props: Properties) : Block(props) {
 		world: IWorld,
 		pos: BlockPos,
 		facingPos: BlockPos
-	): BlockState {
+	): BlockState = if (facing == Direction.UP || facing == Direction.DOWN)
+		getActualState(world, pos, state)
+	else
+		super.updateShape(state, facing, facingState, world, pos, facingPos)
+
+	override fun getStateForPlacement(context: BlockItemUseContext): BlockState =
+		getActualState(context.level, context.clickedPos, defaultBlockState())
+
+	private fun getActualState(world: IWorld, pos: BlockPos, state: BlockState): BlockState {
 		val down = world.getBlockState(pos.below()).block
 		val up = world.getBlockState(pos.above()).block
 		val isHalf = (down is PipeBlock || down is PumpBlock) && up !is PipeBlock
 		return state.setValue(PIPE_SIZE, if (isHalf) PipeSize.HALF else PipeSize.FULL)
-	}
-
-	override fun getStateForPlacement(context: BlockItemUseContext): BlockState {
-		val world = context.level
-		val pos = context.clickedPos
-		val down = world.getBlockState(pos.below()).block
-		val up = world.getBlockState(pos.above()).block
-		val isHalf = (down is PipeBlock || down is PumpBlock) && up !is PipeBlock
-		return defaultBlockState().setValue(PIPE_SIZE, if (isHalf) PipeSize.HALF else PipeSize.FULL)
 	}
 
 	override fun createBlockStateDefinition(builder: StateContainer.Builder<Block, BlockState>) {
@@ -114,7 +113,8 @@ class PipeBlock(props: Properties) : Block(props) {
 			if (topPipe == BlockPos.ZERO)
 				topPipe = pos
 			val aboveTopPipe = topPipe.above()
-			if (world.isEmptyBlock(aboveTopPipe) && world.setBlock(aboveTopPipe, defaultBlockState(), 3)) {
+			val placeState = getActualState(world, aboveTopPipe, defaultBlockState())
+			if (world.isEmptyBlock(aboveTopPipe) && world.setBlock(aboveTopPipe, placeState, 3)) {
 				val soundType = getSoundType(state, world, pos, player)
 				world.playSound(
 					player,
