@@ -1,0 +1,25 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"pattern": [
+		"SDS",
+		"IRI",
+		"SSS"
+	],
+	"key": {
+		"I": {
+			"tag": "forge:ingots/iron"
+		},
+		"R": {
+			"tag": "forge:storage_blocks/redstone"
+		},
+		"S": {
+			"tag": "forge:stone"
+		},
+		"D": {
+			"tag": "forge:gems/diamond"
+		}
+	},
+	"result": {
+		"item": "pollutantpump:pump"
+	}
+}
