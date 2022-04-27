@@ -9,7 +9,8 @@ object PPConfig {
 	var pumpMaxEnergyStorage: Int = 0
 	var pumpEnergyUse: Int = 0
 	var pumpWorkRate: Int = 0
-	var pumpRange: Int = 0
+	var pumpRangeHeight: Int = 0
+	var pumpRangeWidth: Int = 0
 
 	init {
 		ForgeConfigSpec.Builder().configure { PPServerConfig(it) }.apply {
@@ -22,7 +23,8 @@ object PPConfig {
 		pumpMaxEnergyStorage = SERVER.pumpMaxEnergyStorage.get()
 		pumpEnergyUse = SERVER.pumpEnergyUse.get()
 		pumpWorkRate = SERVER.pumpWorkRate.get()
-		pumpRange = SERVER.pumpRange.get()
+		pumpRangeHeight = SERVER.pumpRangeHeight.get()
+		pumpRangeWidth = SERVER.pumpRangeWidth.get()
 	}
 }
 
@@ -36,7 +38,10 @@ class PPServerConfig(builder: ForgeConfigSpec.Builder) {
 	val pumpWorkRate: ForgeConfigSpec.IntValue = builder
 		.comment("The time in ticks between each pollutant block the pump tries to suck up")
 		.defineInRange("pumpWorkRate", 60, 1, Int.MAX_VALUE)
-	val pumpRange: ForgeConfigSpec.IntValue = builder
-		.comment("The range from the top pipe that pollution will be sucked from")
-		.defineInRange("pumpRange", 5, 1, Int.MAX_VALUE)
+	val pumpRangeHeight: ForgeConfigSpec.IntValue = builder
+		.comment("The height range (Y) from the top pipe that pollution will be sucked from")
+		.defineInRange("pumpRangeHeight", 1, 0, Int.MAX_VALUE)
+	val pumpRangeWidth: ForgeConfigSpec.IntValue = builder
+		.comment("The width range (X/Z) from the top pipe that pollution will be sucked from")
+		.defineInRange("pumpRangeWidth", 5, 1, Int.MAX_VALUE)
 }

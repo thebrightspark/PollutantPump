@@ -85,9 +85,9 @@ class PumpTile : TileEntity(PPContent.PUMP_TILE), ITickableTileEntity {
 
 	private fun getAllPositionsInRange(): List<BlockPos> = topPipe?.let { top ->
 		buildList {
-			((top.x - PPConfig.pumpRange)..(top.x + PPConfig.pumpRange)).forEach { x ->
-				((top.y - PPConfig.pumpRange)..(top.y + PPConfig.pumpRange)).forEach { y ->
-					((top.z - PPConfig.pumpRange)..(top.z + PPConfig.pumpRange)).forEach { z ->
+			((top.x - PPConfig.pumpRangeWidth)..(top.x + PPConfig.pumpRangeWidth)).forEach { x ->
+				((top.y - PPConfig.pumpRangeHeight)..(top.y + PPConfig.pumpRangeHeight)).forEach { y ->
+					((top.z - PPConfig.pumpRangeWidth)..(top.z + PPConfig.pumpRangeWidth)).forEach { z ->
 						add(BlockPos(x, y, z))
 					}
 				}
