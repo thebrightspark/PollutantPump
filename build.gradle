@@ -1,11 +1,11 @@
 buildscript {
     repositories {
-        jcenter()
-        maven { url = 'http://files.minecraftforge.net/maven' }
-        maven { url 'https://plugins.gradle.org/m2/' }
+		jcenter()
+        mavenCentral()
+        maven { url = "https://files.minecraftforge.net/maven" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'com.anatawa12.forge:ForgeGradle:2.3-1.0.+'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -21,7 +21,7 @@ compileJava {
 }
 
 minecraft {
-    version = '1.12.2-14.23.4.2705' //'1.12.2-14.23.5.2855'
+    version = '1.12.2-14.23.5.2847' //'1.12.2-14.23.5.2855'
     runDir = 'run'
 
     // the mappings can be changed at any time, and must be in the following format.
